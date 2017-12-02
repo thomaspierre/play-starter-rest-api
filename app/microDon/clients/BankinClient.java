@@ -1,7 +1,9 @@
 package microDon.clients;
 
 import microDon.Bank;
+import microDon.clients.models.AuthenticateResponse;
 import microDon.clients.models.GetBanksResponse;
+import microDon.clients.models.User;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -32,15 +34,15 @@ public class BankinClient {
                            Configuration configuration) {
         this.wsClient = client;
         this.bankinUrl = configuration.getString("bankin.api.url");
-        clientId = configuration.getString("bankin.api.clientId");
-        clientSecret = configuration.getString("bankin.api.clientSecret");
-        version = configuration.getString("bankin.api.version");
+        this.clientId = configuration.getString("bankin.api.clientId");
+        this.clientSecret = configuration.getString("bankin.api.clientSecret");
+        this.version = configuration.getString("bankin.api.version");
 
     }
 
 
-    private void addAuthentication(WSRequest request) {
-        request.setQueryParameter("client_id", clientId)
+    private WSRequest apiAuthentication(WSRequest request) {
+      return  request.setQueryParameter("client_id", clientId)
                 .setQueryParameter("client_secret", clientSecret)
                 .setHeader("Bankin-Version", version);
     }
@@ -48,13 +50,28 @@ public class BankinClient {
     public CompletionStage<List<Bank>> getBanks() {
         WSRequest request = wsClient.url(String.format("%sbanks", bankinUrl));
 
-        addAuthentication(request);
+        apiAuthentication(request);
 
         Logger.debug(request.getUrl());
         return request.get().thenApply(wsResponse -> {
 
             GetBanksResponse res = Json.fromJson(wsResponse.asJson(), GetBanksResponse.class);
             return res.getResources();
+        });
+    }
+
+    public CompletionStage<User> authenticateUser(String email, String password) {
+        WSRequest request = wsClient.url(String.format("%sauthenticate", bankinUrl));
+
+        request.setQueryParameter("email", email);
+        request.setQueryParameter("password", password);
+        apiAuthentication(request);
+
+        Logger.debug(request.getUrl());
+        return request.get().thenApply(wsResponse -> {
+
+            AuthenticateResponse res = Json.fromJson(wsResponse.asJson(), AuthenticateResponse.class);
+            return res.getUser();
         });
     }
 
