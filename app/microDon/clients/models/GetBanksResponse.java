@@ -1,7 +1,5 @@
 package microDon.clients.models;
 
-import microDon.Bank;
-
 import java.util.List;
 
 /**

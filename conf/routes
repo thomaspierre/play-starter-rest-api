@@ -4,4 +4,5 @@ GET     /                           controllers.HomeController.index
 
 #->     /microdon                   microDon.Routes
 
-GET    /microdon                     microDon.MicroDonController.list
+GET    /microdon                     microDon.MicroDonController.listBanks
+GET    /microdon/users/:id/transactions                microDon.MicroDonController.getRoundedUsersTransactions(id)

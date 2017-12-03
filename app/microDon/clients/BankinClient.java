@@ -1,6 +1,6 @@
 package microDon.clients;
 
-import microDon.Bank;
+import microDon.clients.models.Bank;
 import microDon.clients.models.AuthenticateResponse;
 import microDon.clients.models.GetBanksResponse;
 import microDon.clients.models.User;
@@ -41,8 +41,8 @@ public class BankinClient {
     }
 
 
-    private WSRequest apiAuthentication(WSRequest request) {
-      return  request.setQueryParameter("client_id", clientId)
+    private void apiAuthentication(WSRequest request) {
+        request.setQueryParameter("client_id", clientId)
                 .setQueryParameter("client_secret", clientSecret)
                 .setHeader("Bankin-Version", version);
     }
@@ -60,19 +60,15 @@ public class BankinClient {
         });
     }
 
-    public CompletionStage<User> authenticateUser(String email, String password) {
+    public CompletionStage<AuthenticateResponse> authenticateUser(String email, String password) {
         WSRequest request = wsClient.url(String.format("%sauthenticate", bankinUrl));
 
         request.setQueryParameter("email", email);
         request.setQueryParameter("password", password);
         apiAuthentication(request);
 
-        Logger.debug(request.getUrl());
-        return request.get().thenApply(wsResponse -> {
-
-            AuthenticateResponse res = Json.fromJson(wsResponse.asJson(), AuthenticateResponse.class);
-            return res.getUser();
-        });
+        return request.post("")
+                .thenApply(wsResponse -> Json.fromJson(wsResponse.asJson(), AuthenticateResponse.class));
     }
 
 }

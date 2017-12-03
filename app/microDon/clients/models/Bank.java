@@ -1,4 +1,4 @@
-package microDon;
+package microDon.clients.models;
 
 /**
  * Author: tpierre

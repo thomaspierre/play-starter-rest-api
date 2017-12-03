@@ -30,13 +30,11 @@ public class PostController extends Controller {
     }
 
     public CompletionStage<Result> show(String id) {
-        return handler.lookup(id).thenApplyAsync(optionalResource -> {
-            return optionalResource.map(resource ->
-                ok(Json.toJson(resource))
-            ).orElseGet(() ->
-                notFound()
-            );
-        }, ec.current());
+        return handler.lookup(id).thenApplyAsync(optionalResource -> optionalResource.map(resource ->
+            ok(Json.toJson(resource))
+        ).orElseGet(() ->
+            notFound()
+        ), ec.current());
     }
 
     public CompletionStage<Result> update(String id) {

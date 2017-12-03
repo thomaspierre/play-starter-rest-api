@@ -1,24 +1,18 @@
 package microDon;
 
-import com.palominolabs.http.url.UrlBuilder;
 import microDon.clients.BankinClient;
-import microDon.clients.models.GetBanksResponse;
-import play.Configuration;
+import microDon.clients.models.Bank;
+import microDon.models.Transaction;
+import microDon.models.User;
 import play.Logger;
-import play.libs.Json;
-import play.libs.concurrent.HttpExecutionContext;
-import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
-import play.mvc.Http;
-import v1.post.PostData;
-import v1.post.PostRepository;
-import v1.post.PostResource;
 
 import javax.inject.Inject;
-import java.nio.charset.CharacterCodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Handles presentation of Post resources, which map to JSON.
@@ -28,9 +22,12 @@ public class MicroDonHandler {
 
     private final BankinClient bankinClient;
 
+    private final UsersProvider usersProvider;
+
     @Inject
-    public MicroDonHandler(BankinClient bankinClient) {
+    public MicroDonHandler(BankinClient bankinClient, UsersProvider usersProvider) {
         this.bankinClient = bankinClient;
+        this.usersProvider = usersProvider;
 
     }
 
@@ -39,4 +36,24 @@ public class MicroDonHandler {
     }
 
 
+    /**
+     * From a given user's id, calls the bankin API to get his transactions and round them
+     * @param id user's id
+     * @return the lis of users transactions rounded
+     */
+    public CompletionStage<List<Transaction>> getRoundedUsersTransactions(String id) {
+        Optional<User> optUser = usersProvider.getUserById(id);
+        if (!optUser.isPresent()) {
+            throw new UserNotFoundException();
+        }
+
+        User user = optUser.get();
+        return bankinClient.authenticateUser(user.getEmail(), user.getPassword())
+                .thenApply(res -> {
+                    Logger.debug("token is : " + res.getAccessToken());
+                    return new ArrayList<Transaction>();
+                });
+
+
+    }
 }

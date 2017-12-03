@@ -29,13 +29,17 @@ public class MicroDonController extends Controller {
     }
 
 
-	public CompletionStage<Result> list() {
-		return handler.getbanks().thenApplyAsync( res -> {
-			Logger.debug("controller :"+ res.get(0).getName());
+	public CompletionStage<Result> listBanks() {
+		return handler.getbanks().thenApplyAsync(res -> {
 			return ok(Json.toJson(res));
 		}, ec.current());
 	}
 
+	public CompletionStage<Result> getRoundedUsersTransactions(String id) {
+        return handler.getRoundedUsersTransactions(id).thenApplyAsync(res -> {
+            return ok(Json.toJson(res));
+        }, ec.current());
+    }
 
 
 }
