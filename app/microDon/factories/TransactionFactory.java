@@ -4,6 +4,11 @@ import microDon.models.Transaction;
 
 public class TransactionFactory {
 
+    /**
+     * Map a {@link microDon.clients.models.Transaction} to a {@link Transaction}
+     * @param t the transaction to map
+     * @return the mapped transaction
+     */
     public static Transaction fromBankin(microDon.clients.models.Transaction t) {
         Transaction transaction = new Transaction();
 
@@ -20,11 +25,24 @@ public class TransactionFactory {
 
     }
 
+    /**
+     * From a given {@link Transaction }, round the positive amount to the superior decade.
+     * If the amount is null or negative, no update is made
+     * @param transaction the transaction
+     * @return the transaction updated
+     */
     public static Transaction roundAmount(Transaction transaction) {
-        transaction.setAmount(round(transaction.getAmount()));
+        if (transaction.getAmount() != null && transaction.getAmount() < 0) {
+            transaction.setAmount( - round( - transaction.getAmount()));
+        }
         return transaction;
     }
 
+    /**
+     * Round a given {@link Double} to the superior decade
+     * @param amount the given double
+     * @return the double rounded
+     */
     private static Double round(Double amount) {
         if (amount == null) {
             return null;

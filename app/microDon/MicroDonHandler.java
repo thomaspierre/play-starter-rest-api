@@ -6,19 +6,12 @@ import microDon.clients.models.Bank;
 import microDon.factories.TransactionFactory;
 import microDon.models.Transaction;
 import microDon.models.User;
-import play.Logger;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import static microDon.factories.TransactionFactory.fromBankin;
 
 /**
  * Handles presentation of Post resources, which map to JSON.
@@ -59,8 +52,8 @@ public class MicroDonHandler {
         return bankinClient.listTransactions(auth.getAccessToken())
                 .thenApply(res -> res.getResources().stream()
                         .map(TransactionFactory::fromBankin)
+                        .map(TransactionFactory::roundAmount)
                         .collect(Collectors.toList())
                 );
-
     }
 }
