@@ -19,4 +19,20 @@ public class TransactionFactory {
         return transaction;
 
     }
+
+    public static Transaction roundAmount(Transaction transaction) {
+        transaction.setAmount(round(transaction.getAmount()));
+        return transaction;
+    }
+
+    private static Double round(Double amount) {
+        if (amount == null) {
+            return null;
+        }
+
+        int temp = amount.intValue();
+        temp = ((temp + 9) / 10) * 10;
+
+        return (double) temp;
+    }
 }

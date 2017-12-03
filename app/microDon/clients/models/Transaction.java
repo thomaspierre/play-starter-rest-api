@@ -11,7 +11,7 @@ public class Transaction extends BankinBaseModel {
 
     private String description;
 
-    private Long amount;
+    private Double amount;
 
     private LocalDate date;
 
@@ -44,11 +44,11 @@ public class Transaction extends BankinBaseModel {
         this.description = description;
     }
 
-    public Long getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(Long amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 

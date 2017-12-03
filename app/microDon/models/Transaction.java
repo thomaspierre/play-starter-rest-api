@@ -17,7 +17,7 @@ public class Transaction {
 
     private String description;
 
-    private Long amount;
+    private Double amount;
 
     @JsonSerialize(using = LocalDateSerializer.class)
     @JsonDeserialize(using= LocalDateDeserializer.class)
@@ -52,11 +52,11 @@ public class Transaction {
         this.description = description;
     }
 
-    public Long getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(Long amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 

@@ -62,18 +62,5 @@ public class MicroDonHandler {
                         .collect(Collectors.toList())
                 );
 
-       /* User user = optUser.get();
-        CompletionStage<CompletionStage<List<Transaction>>> authentication = bankinClient.authenticateUser(user.getEmail(), user.getPassword())
-                .thenApply(auth -> {
-                    CompletionStage<List<Transaction>> transactions = bankinClient.listTransactions(auth.getAccessToken())
-                            .thenApply(res -> res.getResources().stream()
-                                    .map(TransactionFactory::fromBankin)
-                                    .collect(Collectors.toList())
-                            );
-
-                    return transactions.toCompletableFuture().get();
-                });
-
-*/
     }
 }
