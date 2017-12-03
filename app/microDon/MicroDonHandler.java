@@ -1,7 +1,9 @@
 package microDon;
 
 import microDon.clients.BankinClient;
+import microDon.clients.models.AuthenticateResponse;
 import microDon.clients.models.Bank;
+import microDon.factories.TransactionFactory;
 import microDon.models.Transaction;
 import microDon.models.User;
 import play.Logger;
@@ -13,6 +15,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import static microDon.factories.TransactionFactory.fromBankin;
 
 /**
  * Handles presentation of Post resources, which map to JSON.
@@ -48,12 +54,26 @@ public class MicroDonHandler {
         }
 
         User user = optUser.get();
-        return bankinClient.authenticateUser(user.getEmail(), user.getPassword())
-                .thenApply(res -> {
-                    Logger.debug("token is : " + res.getAccessToken());
-                    return new ArrayList<Transaction>();
+        AuthenticateResponse auth = bankinClient.authenticateUser(user.getEmail(), user.getPassword()).toCompletableFuture().join();
+
+        return bankinClient.listTransactions(auth.getAccessToken())
+                .thenApply(res -> res.getResources().stream()
+                        .map(TransactionFactory::fromBankin)
+                        .collect(Collectors.toList())
+                );
+
+       /* User user = optUser.get();
+        CompletionStage<CompletionStage<List<Transaction>>> authentication = bankinClient.authenticateUser(user.getEmail(), user.getPassword())
+                .thenApply(auth -> {
+                    CompletionStage<List<Transaction>> transactions = bankinClient.listTransactions(auth.getAccessToken())
+                            .thenApply(res -> res.getResources().stream()
+                                    .map(TransactionFactory::fromBankin)
+                                    .collect(Collectors.toList())
+                            );
+
+                    return transactions.toCompletableFuture().get();
                 });
 
-
+*/
     }
 }

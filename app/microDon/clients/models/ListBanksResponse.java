@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Author: tpierre
  */
-public class GetBanksResponse {
+public class ListBanksResponse {
 
 	private List<Bank> resources;
 

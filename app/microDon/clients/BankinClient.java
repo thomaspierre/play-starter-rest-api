@@ -1,9 +1,11 @@
 package microDon.clients;
 
-import microDon.clients.models.Bank;
-import microDon.clients.models.AuthenticateResponse;
-import microDon.clients.models.GetBanksResponse;
-import microDon.clients.models.User;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import microDon.clients.models.*;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -23,6 +25,7 @@ public class BankinClient {
 
 
     private final WSClient wsClient;
+    private final ObjectMapper mapper;
 
     private final String bankinUrl;
     private final String clientId;
@@ -30,21 +33,19 @@ public class BankinClient {
     private final String version;
 
     @Inject
-    public BankinClient(PostRepository repository, HttpExecutionContext ec, WSClient client, Logger logger,
+    public BankinClient(WSClient client, ObjectMapper mapper,
                            Configuration configuration) {
         this.wsClient = client;
+        this.mapper = mapper;
+        this.mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
         this.bankinUrl = configuration.getString("bankin.api.url");
         this.clientId = configuration.getString("bankin.api.clientId");
         this.clientSecret = configuration.getString("bankin.api.clientSecret");
         this.version = configuration.getString("bankin.api.version");
 
-    }
-
-
-    private void apiAuthentication(WSRequest request) {
-        request.setQueryParameter("client_id", clientId)
-                .setQueryParameter("client_secret", clientSecret)
-                .setHeader("Bankin-Version", version);
     }
 
     public CompletionStage<List<Bank>> getBanks() {
@@ -55,7 +56,7 @@ public class BankinClient {
         Logger.debug(request.getUrl());
         return request.get().thenApply(wsResponse -> {
 
-            GetBanksResponse res = Json.fromJson(wsResponse.asJson(), GetBanksResponse.class);
+            ListBanksResponse res = Json.fromJson(wsResponse.asJson(), ListBanksResponse.class);
             return res.getResources();
         });
     }
@@ -70,5 +71,27 @@ public class BankinClient {
         return request.post("")
                 .thenApply(wsResponse -> Json.fromJson(wsResponse.asJson(), AuthenticateResponse.class));
     }
+
+    public CompletionStage<ListTransactionResponse> listTransactions(String usersToken) {
+        WSRequest request = wsClient.url(String.format("%stransactions", bankinUrl));
+
+        apiAuthentication(request);
+        clientAuthentication(request, usersToken);
+
+        return request.get()
+                .thenApply(wsResponse -> Json.fromJson(wsResponse.asJson(), ListTransactionResponse.class));
+               // .thenApply(wsResponse -> mapper.convertValue(wsResponse, new TypeReference<ListResponse<Transaction>>() { }));
+    }
+
+    private void apiAuthentication(WSRequest request) {
+        request.setQueryParameter("client_id", clientId)
+                .setQueryParameter("client_secret", clientSecret)
+                .setHeader("Bankin-Version", version);
+    }
+
+    private void clientAuthentication(WSRequest request, String usersToken) {
+        request.setHeader("Authorization", "Bearer " + usersToken);
+    }
+
 
 }

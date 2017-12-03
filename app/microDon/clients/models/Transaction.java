@@ -1,17 +1,11 @@
-package microDon.models;
+package microDon.clients.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import microDon.clients.models.Account;
-import microDon.clients.models.TransactionCategory;
-import microDon.converters.LocalDateDeserializer;
-import microDon.converters.LocalDateSerializer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-public class Transaction {
+public class Transaction extends BankinBaseModel {
 
     private Integer id;
 
@@ -19,8 +13,6 @@ public class Transaction {
 
     private Long amount;
 
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonDeserialize(using= LocalDateDeserializer.class)
     private LocalDate date;
 
     @JsonProperty("updated_at")
@@ -34,12 +26,12 @@ public class Transaction {
     private Account account;
 
 
-    public Transaction() {
-    }
+    @Override
     public Integer getId() {
         return id;
     }
 
+    @Override
     public void setId(Integer id) {
         this.id = id;
     }
