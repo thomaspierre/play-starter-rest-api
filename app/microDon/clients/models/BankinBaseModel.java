@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BankinBaseModel {
 
-    private Integer id;
+    private Long id;
 
     @JsonProperty("resource_uri")
     private String resourceUri;
@@ -14,11 +14,11 @@ public class BankinBaseModel {
 
 
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

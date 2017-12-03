@@ -17,7 +17,7 @@ public class TransactionFactory {
         transaction.setAmount(t.getAmount());
         transaction.setDate(t.getDate());
         transaction.setUpdatedAt(t.getUpdatedAt());
-        transaction.setDeleted(t.getDeleted());
+        transaction.setIsDeleted(t.isDeleted());
         transaction.setCategory(t.getCategory());
         transaction.setAccount(t.getAccount());
 

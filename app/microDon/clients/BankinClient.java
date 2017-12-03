@@ -3,16 +3,16 @@ package microDon.clients;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import microDon.clients.models.*;
+import microDon.clients.models.AuthenticateResponse;
+import microDon.clients.models.Bank;
+import microDon.clients.models.ListBanksResponse;
+import microDon.clients.models.ListTransactionResponse;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
-import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
-import v1.post.PostRepository;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -61,6 +61,12 @@ public class BankinClient {
         });
     }
 
+    /**
+     * Calls Bankin API to authenticate a user with given credentials
+     * @param email user's email
+     * @param password user's password
+     * @return a {@link AuthenticateResponse}
+     */
     public CompletionStage<AuthenticateResponse> authenticateUser(String email, String password) {
         WSRequest request = wsClient.url(String.format("%sauthenticate", bankinUrl));
 
@@ -72,6 +78,11 @@ public class BankinClient {
                 .thenApply(wsResponse -> Json.fromJson(wsResponse.asJson(), AuthenticateResponse.class));
     }
 
+    /**
+     * Calls Bankin API to get a user's transactions from his secret token
+     * @param usersToken user's secret token
+     * @return a {@link ListTransactionResponse}
+     */
     public CompletionStage<ListTransactionResponse> listTransactions(String usersToken) {
         WSRequest request = wsClient.url(String.format("%stransactions", bankinUrl));
 
@@ -83,12 +94,20 @@ public class BankinClient {
                // .thenApply(wsResponse -> mapper.convertValue(wsResponse, new TypeReference<ListResponse<Transaction>>() { }));
     }
 
+    /**
+     * Add API credentials to a given {@link WSRequest}
+     * @param request the given request
+     */
     private void apiAuthentication(WSRequest request) {
         request.setQueryParameter("client_id", clientId)
                 .setQueryParameter("client_secret", clientSecret)
                 .setHeader("Bankin-Version", version);
     }
 
+    /**
+     * Add client token to a given {@link WSRequest}
+     * @param request the given request
+     */
     private void clientAuthentication(WSRequest request, String usersToken) {
         request.setHeader("Authorization", "Bearer " + usersToken);
     }

@@ -5,25 +5,25 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import microDon.clients.models.Account;
 import microDon.clients.models.TransactionCategory;
-import microDon.converters.LocalDateDeserializer;
 import microDon.converters.LocalDateSerializer;
+import microDon.converters.ZoneDateTimeSerializer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 public class Transaction {
 
-    private Integer id;
+    private Long id;
 
     private String description;
 
     private Double amount;
 
     @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonDeserialize(using= LocalDateDeserializer.class)
     private LocalDate date;
 
     @JsonProperty("updated_at")
+    @JsonSerialize(using = ZoneDateTimeSerializer.class)
     private ZonedDateTime updatedAt;
 
     @JsonProperty("is_deleted")
@@ -36,11 +36,11 @@ public class Transaction {
 
     public Transaction() {
     }
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -76,11 +76,11 @@ public class Transaction {
         this.updatedAt = updatedAt;
     }
 
-    public Boolean getDeleted() {
+    public Boolean getIsDeleted() {
         return isDeleted;
     }
 
-    public void setDeleted(Boolean deleted) {
+    public void setIsDeleted(Boolean deleted) {
         isDeleted = deleted;
     }
 

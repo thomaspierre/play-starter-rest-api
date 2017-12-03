@@ -1,13 +1,13 @@
 package microDon.clients.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import microDon.converters.ZoneDateTimeSerializer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 public class Transaction extends BankinBaseModel {
-
-    private Integer id;
 
     private String description;
 
@@ -16,6 +16,7 @@ public class Transaction extends BankinBaseModel {
     private LocalDate date;
 
     @JsonProperty("updated_at")
+    @JsonSerialize(using = ZoneDateTimeSerializer.class)
     private ZonedDateTime updatedAt;
 
     @JsonProperty("is_deleted")
@@ -24,17 +25,6 @@ public class Transaction extends BankinBaseModel {
     private TransactionCategory category;
 
     private Account account;
-
-
-    @Override
-    public Integer getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getDescription() {
         return description;
@@ -68,7 +58,7 @@ public class Transaction extends BankinBaseModel {
         this.updatedAt = updatedAt;
     }
 
-    public Boolean getDeleted() {
+    public Boolean isDeleted() {
         return isDeleted;
     }
 
