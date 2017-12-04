@@ -2,17 +2,18 @@ package microDon;
 
 import microDon.clients.BankinClient;
 import microDon.clients.models.*;
+import microDon.exceptions.UserNotFoundException;
 import microDon.factories.AccountFactory;
 import microDon.factories.TransactionFactory;
 import microDon.models.Transaction;
 import microDon.models.User;
+import play.Logger;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
@@ -44,6 +45,7 @@ public class MicroDonHandler {
      * @return the lis of users transactions rounded
      */
     public CompletionStage<List<Transaction>> getRoundedUsersTransactions(String id) {
+        Logger.debug("getRoundedUsersTransactions -> user id : " + id);
         Optional<User> optUser = usersProvider.getUserById(id);
         if (!optUser.isPresent()) {
             throw new UserNotFoundException();
@@ -53,10 +55,15 @@ public class MicroDonHandler {
         AuthenticateResponse auth = bankinClient.authenticateUser(user.getEmail(), user.getPassword()).toCompletableFuture().join();
 
         CompletionStage<List<Transaction>> transactionsFuture = bankinClient.listTransactions(auth.getAccessToken())
-                .thenApply(res -> res.getResources().stream()
-                                .map(TransactionFactory::fromBankin)
-                                .map(TransactionFactory::roundAmount)
-                                .collect(Collectors.toList())
+                .thenApply(res -> {
+                    if (res == null || res.getResources() == null) {
+                        return new ArrayList<>();
+                    }
+                    return res.getResources().stream()
+                                    .map(TransactionFactory::fromBankin)
+                                    .map(TransactionFactory::roundAmount)
+                                    .collect(Collectors.toList());
+                        }
                 );
 
         CompletionStage<ListResponse<Account>> accountsFuture = bankinClient.listAccounts(auth.getAccessToken());
@@ -73,6 +80,7 @@ public class MicroDonHandler {
         });
         return transactions;
     }
+
     /**
      * Search an {@link Account} by his id from a given list
      * @param accountId the given id
@@ -86,6 +94,25 @@ public class MicroDonHandler {
         return accounts.stream()
                 .filter(account -> accountId.equals(account.getId()))
                 .findFirst();
-
     }
+
+    /**
+     * Aggregate all users Transactions' amounts
+     * @param startingDate
+     * @param endDate
+     * @return
+     */
+    public Map<String, List<Double>> aggregateTransactionsByUser(LocalDate startingDate,
+                                                                                  LocalDate endDate) {
+        List<User> users = usersProvider.list();
+
+        Map<String, List<Double>> map = new HashMap<>();
+        users.forEach(user -> map.put(user.getUuid(), getRoundedUsersTransactions(user.getUuid())
+                .toCompletableFuture().join().stream()
+                .map(Transaction::getAmount)
+                .collect(Collectors.toList())));
+
+        return map;
+    }
+
 }

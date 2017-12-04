@@ -37,4 +37,8 @@ public class UsersProvider {
         }
         return users.stream().filter(u -> id.equals(u.getUuid())).findFirst();
     }
+
+    public List<User> list() {
+        return users;
+    }
 }

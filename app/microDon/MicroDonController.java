@@ -1,11 +1,15 @@
 package microDon;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import microDon.models.AggregateUsersTransactionsWrapper;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Result;
+import v1.post.PostResource;
 
 import javax.inject.Inject;
+import java.time.LocalDate;
 import java.util.concurrent.CompletionStage;
 
 
@@ -27,10 +31,17 @@ public class MicroDonController extends Controller {
 		}, ec.current());
 	}
 
-	public CompletionStage<Result> getRoundedUsersTransactions(String id) {
+	public CompletionStage<Result> getRoundedUserTransactions(String id) {
         return handler.getRoundedUsersTransactions(id).thenApplyAsync(res -> {
             return ok(Json.toJson(res));
         }, ec.current());
+    }
+
+    public Result aggregateTransactionsByUser() {
+        JsonNode json = request().body().asJson();
+        final AggregateUsersTransactionsWrapper wrapper = Json.fromJson(json, AggregateUsersTransactionsWrapper.class);
+        return ok(Json.toJson(handler.aggregateTransactionsByUser(wrapper.getStartingDate(), wrapper.getEndDate())));
+
     }
 
 
