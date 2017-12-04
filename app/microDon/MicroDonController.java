@@ -22,7 +22,7 @@ public class MicroDonController extends Controller {
 
 
 	public CompletionStage<Result> listBanks() {
-		return handler.getbanks().thenApplyAsync(res -> {
+		return handler.getBanks().thenApplyAsync(res -> {
 			return ok(Json.toJson(res));
 		}, ec.current());
 	}

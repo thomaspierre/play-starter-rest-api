@@ -3,7 +3,11 @@ package microDon.clients;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import microDon.ErrorDuringProcessingException;
+import microDon.UserNotFoundException;
 import microDon.clients.models.*;
 import play.Configuration;
 import play.Logger;
@@ -12,6 +16,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -78,17 +83,25 @@ public class BankinClient {
     /**
      * Calls Bankin API to get a user's transactions from his secret token
      * @param usersToken user's secret token
-     * @return a {@link ListTransactionResponse}
+     * @return a {@link ListResponse<Transaction>   }
      */
-    public CompletionStage<ListTransactionResponse> listTransactions(String usersToken) {
+    public CompletionStage<ListResponse<Transaction>> listTransactions(String usersToken) {
         WSRequest request = wsClient.url(String.format("%stransactions", bankinUrl));
 
         apiAuthentication(request);
         clientAuthentication(request, usersToken);
 
         return request.get()
-                .thenApply(wsResponse -> Json.fromJson(wsResponse.asJson(), ListTransactionResponse.class));
-               // .thenApply(wsResponse -> mapper.convertValue(wsResponse, new TypeReference<ListResponse<Transaction>>() { }));
+                .thenApply(wsResponse -> {
+                    try {
+                        return Json.mapper()
+                                .readValue(wsResponse.asJson().traverse(),
+                                        new TypeReference<ListResponse<Transaction>>() {});
+                    } catch (IOException e) {
+                        Logger.error(e.getMessage());
+                        throw new ErrorDuringProcessingException();
+                    }
+                });
     }
 
     /**
@@ -109,8 +122,7 @@ public class BankinClient {
         request.setHeader("Authorization", "Bearer " + usersToken);
     }
 
-
-    public CompletionStage<ListAccountResponse> listAccounts(String usersToken) {
+    public CompletionStage<ListResponse<Account>> listAccounts(String usersToken) {
         WSRequest request = wsClient.url(String.format("%saccounts", bankinUrl));
 
         apiAuthentication(request);
@@ -118,8 +130,14 @@ public class BankinClient {
 
         return request.get()
                 .thenApply(wsResponse -> {
-                    Logger.debug(wsResponse.getBody());
-                    return Json.fromJson(wsResponse.asJson(), ListAccountResponse.class);
+                    try {
+                        return Json.mapper()
+                                .readValue(wsResponse.asJson().traverse(),
+                                        new TypeReference<ListResponse<Account>>() {});
+                    } catch (IOException e) {
+                        Logger.error(e.getMessage());
+                        throw new ErrorDuringProcessingException();
+                    }
                 });
     }
 }

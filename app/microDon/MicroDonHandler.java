@@ -1,16 +1,14 @@
 package microDon;
 
 import microDon.clients.BankinClient;
-import microDon.clients.models.Account;
-import microDon.clients.models.AuthenticateResponse;
-import microDon.clients.models.Bank;
-import microDon.clients.models.ListAccountResponse;
+import microDon.clients.models.*;
 import microDon.factories.AccountFactory;
 import microDon.factories.TransactionFactory;
 import microDon.models.Transaction;
 import microDon.models.User;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -35,7 +33,7 @@ public class MicroDonHandler {
 
     }
 
-    public CompletionStage<List<Bank>> getbanks() {
+    public CompletionStage<List<Bank>> getBanks() {
 		return bankinClient.getBanks();
     }
 
@@ -56,19 +54,19 @@ public class MicroDonHandler {
 
         CompletionStage<List<Transaction>> transactionsFuture = bankinClient.listTransactions(auth.getAccessToken())
                 .thenApply(res -> res.getResources().stream()
-                        .map(TransactionFactory::fromBankin)
-                        .map(TransactionFactory::roundAmount)
-                        .collect(Collectors.toList())
+                                .map(TransactionFactory::fromBankin)
+                                .map(TransactionFactory::roundAmount)
+                                .collect(Collectors.toList())
                 );
 
-        CompletionStage<ListAccountResponse> accountsFuture = bankinClient.listAccounts(auth.getAccessToken());
+        CompletionStage<ListResponse<Account>> accountsFuture = bankinClient.listAccounts(auth.getAccessToken());
 
         return transactionsFuture.thenCombine(accountsFuture, MicroDonHandler::combineTransaction);
 
     }
 
-    private static List<Transaction> combineTransaction(List<Transaction> transactions, ListAccountResponse accounts) {
-        transactions.stream().forEach(t -> {
+    private static List<Transaction> combineTransaction(List<Transaction> transactions, ListResponse<Account> accounts) {
+        transactions.forEach(t -> {
             Optional<microDon.models.Account> optAccount = findAccountById(t.getAccount().getId(), accounts.getResources())
                     .map(AccountFactory::fromBankin);
             t.setAccount(optAccount.orElse(t.getAccount()));
@@ -79,7 +77,7 @@ public class MicroDonHandler {
      * Search an {@link Account} by his id from a given list
      * @param accountId the given id
      * @param accounts a list of accounts
-     * @return
+     * @return the account found
      */
     private static Optional<Account> findAccountById(Long accountId, List<Account> accounts) {
         if (accountId == null) {
