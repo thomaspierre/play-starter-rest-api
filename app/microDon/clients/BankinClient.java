@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import microDon.clients.models.AuthenticateResponse;
-import microDon.clients.models.Bank;
-import microDon.clients.models.ListBanksResponse;
-import microDon.clients.models.ListTransactionResponse;
+import microDon.clients.models.*;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -113,4 +110,16 @@ public class BankinClient {
     }
 
 
+    public CompletionStage<ListAccountResponse> listAccounts(String usersToken) {
+        WSRequest request = wsClient.url(String.format("%saccounts", bankinUrl));
+
+        apiAuthentication(request);
+        clientAuthentication(request, usersToken);
+
+        return request.get()
+                .thenApply(wsResponse -> {
+                    Logger.debug(wsResponse.getBody());
+                    return Json.fromJson(wsResponse.asJson(), ListAccountResponse.class);
+                });
+    }
 }

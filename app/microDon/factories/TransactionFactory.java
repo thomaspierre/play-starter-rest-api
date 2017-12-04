@@ -19,7 +19,7 @@ public class TransactionFactory {
         transaction.setUpdatedAt(t.getUpdatedAt());
         transaction.setIsDeleted(t.isDeleted());
         transaction.setCategory(t.getCategory());
-        transaction.setAccount(t.getAccount());
+        transaction.setAccount(AccountFactory.fromBankin(t.getAccount()));
 
         return transaction;
 

@@ -3,7 +3,6 @@ package microDon.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import microDon.clients.models.Account;
 import microDon.clients.models.TransactionCategory;
 import microDon.converters.LocalDateSerializer;
 import microDon.converters.ZoneDateTimeSerializer;

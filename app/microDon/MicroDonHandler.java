@@ -1,8 +1,11 @@
 package microDon;
 
 import microDon.clients.BankinClient;
+import microDon.clients.models.Account;
 import microDon.clients.models.AuthenticateResponse;
 import microDon.clients.models.Bank;
+import microDon.clients.models.ListAccountResponse;
+import microDon.factories.AccountFactory;
 import microDon.factories.TransactionFactory;
 import microDon.models.Transaction;
 import microDon.models.User;
@@ -11,7 +14,9 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 
 /**
  * Handles presentation of Post resources, which map to JSON.
@@ -49,11 +54,40 @@ public class MicroDonHandler {
         User user = optUser.get();
         AuthenticateResponse auth = bankinClient.authenticateUser(user.getEmail(), user.getPassword()).toCompletableFuture().join();
 
-        return bankinClient.listTransactions(auth.getAccessToken())
+        CompletionStage<List<Transaction>> transactionsFuture = bankinClient.listTransactions(auth.getAccessToken())
                 .thenApply(res -> res.getResources().stream()
                         .map(TransactionFactory::fromBankin)
                         .map(TransactionFactory::roundAmount)
                         .collect(Collectors.toList())
                 );
+
+        CompletionStage<ListAccountResponse> accountsFuture = bankinClient.listAccounts(auth.getAccessToken());
+
+        return transactionsFuture.thenCombine(accountsFuture, MicroDonHandler::combineTransaction);
+
+    }
+
+    private static List<Transaction> combineTransaction(List<Transaction> transactions, ListAccountResponse accounts) {
+        transactions.stream().forEach(t -> {
+            Optional<microDon.models.Account> optAccount = findAccountById(t.getAccount().getId(), accounts.getResources())
+                    .map(AccountFactory::fromBankin);
+            t.setAccount(optAccount.orElse(t.getAccount()));
+        });
+        return transactions;
+    }
+    /**
+     * Search an {@link Account} by his id from a given list
+     * @param accountId the given id
+     * @param accounts a list of accounts
+     * @return
+     */
+    private static Optional<Account> findAccountById(Long accountId, List<Account> accounts) {
+        if (accountId == null) {
+            return Optional.empty();
+        }
+        return accounts.stream()
+                .filter(account -> accountId.equals(account.getId()))
+                .findFirst();
+
     }
 }
