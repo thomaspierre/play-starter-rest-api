@@ -2,6 +2,6 @@
 
 #->     /microdon                   microDon.Routes
 
-GET    /microdon                     microDon.MicroDonController.listBanks
+GET    /microdon/banks                     microDon.MicroDonController.listBanks
 GET    /microdon/users/:id/transactions            microDon.MicroDonController.getRoundedUserTransactions(id: String)
 POST    /microdon/users/transactions                microDon.MicroDonController.aggregateTransactionsByUser
