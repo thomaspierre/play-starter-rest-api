@@ -45,6 +45,17 @@ public class MicroDonHandler {
      * @return the lis of users transactions rounded
      */
     public CompletionStage<List<Transaction>> getRoundedUsersTransactions(String id) {
+       return getRoundedUsersTransactions(id, null, null);
+    }
+
+    /**
+     * From a given user's id, calls the bankin API to get his transactions and round them
+     * @param id user's id
+     * @param startingDate transactions starting date
+     * @param endDate transactions ending date
+     * @return the lis of users transactions rounded
+     */
+    public CompletionStage<List<Transaction>> getRoundedUsersTransactions(String id, LocalDate startingDate, LocalDate endDate) {
         Logger.debug("getRoundedUsersTransactions -> user id : " + id);
         Optional<User> optUser = usersProvider.getUserById(id);
         if (!optUser.isPresent()) {
@@ -54,7 +65,7 @@ public class MicroDonHandler {
         User user = optUser.get();
         AuthenticateResponse auth = bankinClient.authenticateUser(user.getEmail(), user.getPassword()).toCompletableFuture().join();
 
-        CompletionStage<List<Transaction>> transactionsFuture = bankinClient.listTransactions(auth.getAccessToken())
+        CompletionStage<List<Transaction>> transactionsFuture = bankinClient.listTransactions(auth.getAccessToken(), startingDate, endDate)
                 .thenApply(res -> {
                     if (res == null || res.getResources() == null) {
                         return new ArrayList<>();
@@ -107,7 +118,8 @@ public class MicroDonHandler {
         List<User> users = usersProvider.list();
 
         Map<String, List<Double>> map = new HashMap<>();
-        users.forEach(user -> map.put(user.getUuid(), getRoundedUsersTransactions(user.getUuid())
+        users.forEach(user -> map.put(user.getUuid(), getRoundedUsersTransactions(user.getUuid(),
+                startingDate, endDate)
                 .toCompletableFuture().join().stream()
                 .map(Transaction::getAmount)
                 .collect(Collectors.toList())));

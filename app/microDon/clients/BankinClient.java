@@ -15,6 +15,8 @@ import play.libs.ws.WSRequest;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -81,13 +83,25 @@ public class BankinClient {
     /**
      * Calls Bankin API to get a user's transactions from his secret token
      * @param usersToken user's secret token
+     * @param startingDate transactions starting date
+     * @param endDate transactions' ending date
      * @return a {@link ListResponse<Transaction>   }
      */
-    public CompletionStage<ListResponse<Transaction>> listTransactions(String usersToken) {
+    public CompletionStage<ListResponse<Transaction>> listTransactions(String usersToken,
+                                                                       LocalDate startingDate,
+                                                                       LocalDate endDate) {
         WSRequest request = wsClient.url(String.format("%stransactions", bankinUrl));
 
         apiAuthentication(request);
         clientAuthentication(request, usersToken);
+
+        if (startingDate != null) {
+            request.setQueryParameter("since", formatLocaDate(startingDate));
+        }
+
+        if (endDate != null) {
+            request.setQueryParameter("until", formatLocaDate(endDate));
+        }
 
         return request.get()
                 .thenApply(wsResponse -> {
@@ -137,5 +151,14 @@ public class BankinClient {
                         throw new ErrorDuringProcessingException();
                     }
                 });
+    }
+
+    /**
+     * Format a {@link LocalDate} to Bankin API format
+     * @param date the date to format
+     * @return given date in string
+     */
+    private String formatLocaDate(LocalDate date) {
+       return date.format(DateTimeFormatter.ISO_DATE);
     }
 }
