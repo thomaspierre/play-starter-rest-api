@@ -1,0 +1,95 @@
+{
+	"info": {
+		"name": "Bankin",
+		"_postman_id": "dd4ce560-f8d4-9cb1-9794-22a93302126a",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List banks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:9000/microdon/banks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"microdon",
+						"banks"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "List user transactions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"startingDate\": \"2016-01-01\",\n\t\"endDate\": \"2018-01-01\"\n\t\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9000/microdon/users/1/transactions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"microdon",
+						"users",
+						"1",
+						"transactions"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Aggregate users transactions",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"startingDate\": \"2015-03-01\",\n\t\"endDate\": \"2015-04-01\"\n\t\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9000/microdon/users/transactions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"microdon",
+						"users",
+						"transactions"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

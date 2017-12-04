@@ -13,7 +13,9 @@ sbt test
 
 ## Routes
 
-This API provides 3 routes : 
+This API provides 3 routes, a postman collection is available with this repository.
+
+ 
 1. List banks (to test the API) : 
 ```
 curl -X GET \
