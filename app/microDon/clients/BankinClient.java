@@ -1,12 +1,8 @@
 package microDon.clients;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import microDon.exceptions.ErrorDuringProcessingException;
 import microDon.clients.models.*;
+import microDon.exceptions.ErrorDuringProcessingException;
 import play.Configuration;
 import play.Logger;
 import play.libs.Json;
@@ -27,7 +23,6 @@ public class BankinClient {
 
 
     private final WSClient wsClient;
-    private final ObjectMapper mapper;
 
     private final String bankinUrl;
     private final String clientId;
@@ -35,13 +30,9 @@ public class BankinClient {
     private final String version;
 
     @Inject
-    public BankinClient(WSClient client, ObjectMapper mapper,
+    public BankinClient(WSClient client,
                            Configuration configuration) {
         this.wsClient = client;
-        this.mapper = mapper;
-        this.mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         this.bankinUrl = configuration.getString("bankin.api.url");
         this.clientId = configuration.getString("bankin.api.clientId");
@@ -134,6 +125,11 @@ public class BankinClient {
         request.setHeader("Authorization", "Bearer " + usersToken);
     }
 
+    /**
+     * List accounts from a given user's token
+     * @param usersToken the user token
+     * @return a list of accounts
+     */
     public CompletionStage<ListResponse<Account>> listAccounts(String usersToken) {
         WSRequest request = wsClient.url(String.format("%saccounts", bankinUrl));
 

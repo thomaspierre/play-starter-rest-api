@@ -12,7 +12,6 @@ import play.Logger;
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -109,9 +108,9 @@ public class MicroDonHandler {
 
     /**
      * Aggregate all users Transactions' amounts
-     * @param startingDate
-     * @param endDate
-     * @return
+     * @param startingDate transactions starting date
+     * @param endDate transactions ending date
+     * @return transactions per user id
      */
     public Map<String, List<Double>> aggregateTransactionsByUser(LocalDate startingDate,
                                                                                   LocalDate endDate) {
